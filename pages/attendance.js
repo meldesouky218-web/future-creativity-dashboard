@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useMemo, useState } from "react";
 import Layout from "../components/Layout";
 import useAuthGuard from "../hooks/useAuthGuard";
