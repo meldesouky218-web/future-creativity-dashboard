@@ -21,7 +21,8 @@ export default function StaffProfile() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [resetting, setResetting] = useState(false);
   const [resetError, setResetError] = useState("");
-  const [formData, setFormData] = useState({ name: "", role: "" });
+  const [formData, setFormData] = useState({ name: "", role: "", phone: "", job_title: "", status: "active" });
+  const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
     if (!id) return;
@@ -30,7 +31,13 @@ export default function StaffProfile() {
         const res = await API.get(`/staff/${id}`);
         const payload = res.data?.user ? res.data : { user: res.data };
         setUser(payload.user);
-        setFormData({ name: payload.user.name, role: payload.user.role });
+        setFormData({
+          name: payload.user.name || "",
+          role: payload.user.role || "staff",
+          phone: payload.user.phone || "",
+          job_title: payload.user.job_title || "",
+          status: payload.user.status || "active",
+        });
         setRecentAssignments(payload.recentAssignments || []);
         setRecentAttendance(payload.recentAttendance || []);
         try {
@@ -57,8 +64,13 @@ export default function StaffProfile() {
   const handleSave = async () => {
     // keep page content; errors handled by toast
     try {
-      const res = await API.put(`/staff/${id}`, formData);
-      setUser(res.data.user);
+      await API.put(`/staff/${id}`, formData);
+      // refetch snapshot to ensure data fresh
+      try {
+        const refreshed = await API.get(`/staff/${id}`);
+        const payload = refreshed.data?.user ? refreshed.data : { user: refreshed.data };
+        setUser(payload.user);
+      } catch {}
       setEditing(false);
       addToast("✅ User info updated successfully!", "success");
     } catch (err) {
@@ -130,6 +142,27 @@ export default function StaffProfile() {
           >
             ← Back to list
           </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-3 border-b border-[#1F2837] mb-6">
+          {[
+            { k: "profile", label: "Profile" },
+            { k: "attendance", label: "Attendance" },
+            { k: "assignments", label: "Assignments" },
+            { k: "contracts", label: "Contracts" },
+            { k: "payroll", label: "Payroll" },
+          ].map((t) => (
+            <button
+              key={t.k}
+              onClick={() => setActiveTab(t.k)}
+              className={`px-4 py-2 text-sm font-semibold -mb-px border-b-2 ${
+                activeTab === t.k ? "border-matteGold text-matteGold" : "border-transparent text-lightText/60"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
         {/* ✅ بيانات الموظف + الصلاحيات */}
@@ -259,7 +292,99 @@ export default function StaffProfile() {
           </div>
         </div>
 
-        {/* ✅ أقسام فرعية لعرض الحضور والعقود والمرتبات */}
+        {/* Tabs content */}
+        {activeTab === "attendance" && (
+          <div className="bg-[#0F1524] border border-[#1F2837] rounded-2xl p-6 mt-6">
+            {Array.isArray(recentAttendance) && recentAttendance.length ? (
+              <ul className="space-y-2 text-sm">
+                {recentAttendance.map((r) => (
+                  <li key={r.id} className="border-b border-[#1F2837] pb-2">
+                    <div className="flex justify-between">
+                      <span>{r.check_type?.toUpperCase()} • {r.status} {r.project_id ? `(Project #${r.project_id})` : ""}</span>
+                      <span className="text-lightText/60">{new Date(r.created_at).toLocaleString()}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-lightText/60 text-sm">No attendance yet.</p>
+            )}
+          </div>
+        )}
+
+        {activeTab === "assignments" && (
+          <div className="bg-[#0F1524] border border-[#1F2837] rounded-2xl p-6 mt-6">
+            {Array.isArray(recentAssignments) && recentAssignments.length ? (
+              <ul className="space-y-2 text-sm">
+                {recentAssignments.map((a) => (
+                  <li key={a.id} className="border-b border-[#1F2837] pb-2">
+                    <div className="flex justify-between">
+                      <span>{a.project_name} — {a.role_in_project || "Member"}</span>
+                      <span className="text-lightText/60">{a.start_date || "-"}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-lightText/60 text-sm">No assignments yet.</p>
+            )}
+          </div>
+        )}
+
+        {activeTab === "contracts" && (
+          <div className="bg-[#0F1524] border border-[#1F2837] rounded-2xl p-6 mt-6">
+            {contracts.length ? (
+              <ul className="space-y-2 text-sm">
+                {contracts.map((c) => (
+                  <li key={c.id} className="border-b border-[#1F2837] pb-2">
+                    <div className="flex items-center justify-between">
+                      <div>Project #{c.project_id}</div>
+                      <div className="flex items-center gap-3 text-xs">
+                        {c.file_url ? (
+                          <a href={c.file_url.startsWith("http") ? c.file_url : `http://localhost:5000${c.file_url}`} target="_blank" rel="noreferrer" className="text-matteGold underline">Open</a>
+                        ) : null}
+                        <span className="text-lightText/60">{new Date(c.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-lightText/60 text-sm">No contracts yet.</p>
+            )}
+          </div>
+        )}
+
+        {activeTab === "payroll" && (
+          <div className="bg-[#0F1524] border border-[#1F2837] rounded-2xl p-6 mt-6">
+            {payroll.length ? (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-lightText/60">
+                    <th className="py-2">Project</th>
+                    <th className="py-2">Days</th>
+                    <th className="py-2">Amount</th>
+                    <th className="py-2">Approved</th>
+                    <th className="py-2">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payroll.map((row) => (
+                    <tr key={row.id} className="border-t border-[#1F2837]">
+                      <td className="py-2">#{row.project_id}</td>
+                      <td className="py-2">{row.total_days ?? "-"}</td>
+                      <td className="py-2">{row.total_amount}</td>
+                      <td className="py-2">{row.approved ? "Yes" : "No"}</td>
+                      <td className="py-2">{new Date(row.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-lightText/60 text-sm">No payroll records.</p>
+            )}
+          </div>
+        )}
         <div className="grid md:grid-cols-3 gap-6 mt-10">
           <div className="bg-[#101624] border border-[#1F2837] rounded-2xl p-5">
             <h3 className="text-matteGold font-semibold mb-3">Attendance</h3>
