@@ -1,0 +1,41 @@
+{
+  "app": {
+    "title": "Future Creativity Console",
+    "enterPanel": "Enter Panel",
+    "learnMore": "Learn More",
+    "welcome": "Welcome to Future Creativity Console",
+    "signOut": "Sign Out",
+    "navigation": "Navigation"
+  },
+  "home": {
+    "subtitle": "Manage projects, teams, attendance, payroll, and documents — all in one streamlined platform."
+  },
+  "login": {
+    "signIn": "Sign in",
+    "welcomeBack": "Use your company account",
+    "email": "Email",
+    "password": "Password",
+    "forgot": "Forgot password?",
+    "home": "Home",
+    "signing": "Signing in..."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "staff": "Staff",
+    "payroll": "Payroll",
+    "attendance": "Attendance",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "welcome": "Welcome,",
+    "approved": "Approved",
+    "pending": "Pending",
+    "monthlyPayroll": "Monthly Payroll",
+    "projects": "Projects",
+    "runningProjects": "Running Projects",
+    "totalStaffAssigned": "Total Staff Assigned",
+    "pendingTasks": "Pending Tasks"
+  }
+}
+

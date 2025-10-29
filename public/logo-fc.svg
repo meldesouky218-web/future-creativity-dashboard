@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280" viewBox="0 0 280 280" role="img" aria-label="Future of Creativity">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0f6a53"/>
+      <stop offset="1" stop-color="#35caa3"/>
+    </linearGradient>
+  </defs>
+  <rect width="280" height="280" rx="32" fill="#0F1524"/>
+  <g transform="translate(40,30)">
+    <path d="M100 0a100 100 0 0 1 0 200l-18-28a72 72 0 1 0-51-69h-32A104 104 0 0 1 100 0z" fill="url(#g)"/>
+    <circle cx="100" cy="100" r="30" fill="#E5C46B"/>
+    <path d="M100 210l-30-46h60z" fill="#0f6a53"/>
+    <text x="100" y="240" font-family="Inter,Arial" font-size="18" text-anchor="middle" fill="#E5C46B">Future of Creativity</text>
+  </g>
+</svg>
+
