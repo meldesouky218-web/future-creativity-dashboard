@@ -2,22 +2,35 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import API from "../utils/api";
 import Layout from "../components/Layout";
+import StaffFormModal from "../components/StaffFormModal";
 
 export default function StaffManagement() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
-  // ✅ تحميل قائمة المستخدمين
-  useEffect(() => {
+  const loadUsers = () =>
     API.get("/staff")
       .then((res) => setUsers(res.data))
       .catch(() => setError("Failed to fetch staff list"));
+
+  // ✅ تحميل قائمة المستخدمين
+  useEffect(() => {
+    loadUsers();
   }, []);
 
   return (
     <Layout title="User Management">
       <div className="p-6">
-        <h2 className="text-2xl font-semibold text-matteGold mb-4">Staff</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold text-matteGold">Staff</h2>
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full bg-matteGold px-4 py-2 text-sm font-semibold text-black hover:bg-[#E6C869]"
+          >
+            + Add User
+          </button>
+        </div>
         <p className="text-lightText/70 mb-6">
           Browse users, then open a profile to edit role or reset password.
         </p>
@@ -56,6 +69,11 @@ export default function StaffManagement() {
           </ul>
         </div>
       </div>
+      <StaffFormModal
+        open={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        onSuccess={loadUsers}
+      />
     </Layout>
   );
 }

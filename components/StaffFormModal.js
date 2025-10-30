@@ -10,21 +10,25 @@ export default function StaffFormModal({ open, onClose, editUser, onSuccess }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    password: "",
     role: "staff",
+    phone: "",
+    job_title: "",
+    status: "active",
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (editUser) {
       setForm({
-        name: editUser.name,
-        email: editUser.email,
-        password: "",
-        role: editUser.role,
+        name: editUser.name || "",
+        email: editUser.email || "",
+        role: editUser.role || "staff",
+        phone: editUser.phone || "",
+        job_title: editUser.job_title || "",
+        status: editUser.status || "active",
       });
     } else {
-      setForm({ name: "", email: "", password: "", role: "staff" });
+      setForm({ name: "", email: "", role: "staff", phone: "", job_title: "", status: "active" });
     }
   }, [editUser]);
 
@@ -34,7 +38,7 @@ export default function StaffFormModal({ open, onClose, editUser, onSuccess }) {
   };
 
   const handleSubmit = async () => {
-    if (!form.name || !form.email || (!editUser && !form.password)) {
+    if (!form.name || !form.email) {
       addToast("Please fill all required fields.", "error");
       return;
     }
@@ -45,7 +49,8 @@ export default function StaffFormModal({ open, onClose, editUser, onSuccess }) {
         await API.put(`/staff/${editUser.id}`, form);
         addToast("✅ User updated successfully!", "success");
       } else {
-        await API.post("/staff", form);
+        const payload = { name: form.name, email: form.email, role: form.role, phone: form.phone, job_title: form.job_title, status: form.status };
+        await API.post("/staff", payload);
         addToast("✅ New user added successfully!", "success");
       }
       onSuccess?.();
@@ -90,16 +95,10 @@ export default function StaffFormModal({ open, onClose, editUser, onSuccess }) {
             placeholder="Email address"
             className="w-full bg-[#101624] border border-[#1F2837] rounded-lg px-3 py-2 text-sm text-lightText"
           />
-          {!editUser && (
-            <input
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              type="password"
-              placeholder="Password"
-              className="w-full bg-[#101624] border border-[#1F2837] rounded-lg px-3 py-2 text-sm text-lightText"
-            />
-          )}
+          <div className="grid sm:grid-cols-2 gap-3">
+            <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone (optional)" className="w-full bg-[#101624] border border-[#1F2837] rounded-lg px-3 py-2 text-sm text-lightText" />
+            <input name="job_title" value={form.job_title} onChange={handleChange} placeholder="Job title (optional)" className="w-full bg-[#101624] border border-[#1F2837] rounded-lg px-3 py-2 text-sm text-lightText" />
+          </div>
 
           <select
             name="role"
@@ -110,7 +109,14 @@ export default function StaffFormModal({ open, onClose, editUser, onSuccess }) {
             <option value="admin">Admin</option>
             <option value="manager">Manager</option>
             <option value="staff">Staff</option>
-            <option value="client">Client</option>
+            <option value="supervisor">Supervisor</option>
+            <option value="viewer">Viewer</option>
+          </select>
+
+          <select name="status" value={form.status} onChange={handleChange} className="w-full bg-[#101624] border border-[#1F2837] rounded-lg px-3 py-2 text-sm text-lightText">
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="offboarded">Offboarded</option>
           </select>
         </div>
 
