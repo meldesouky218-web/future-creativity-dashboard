@@ -1,35 +1,29 @@
 import axios from "axios";
 
-// ✅ استخدم رابط السيرفر الحقيقي على Vercel بدلاً من localhost
+// ✅ تحديد عنوان الـ API تلقائيًا حسب البيئة
 const baseURL =
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://future-creativity-server.vercel.app/api";
+  (typeof window !== "undefined" && window.location.hostname.includes("localhost")
+    ? "http://localhost:5000/api"
+    : "https://future-creativity-server.vercel.app/api");
 
-// ✅ إنشاء instance للاتصال بالـ API
+console.log("🌍 Using API URL:", baseURL); // debug — يظهر مرة واحدة بالconsole
+
+// ✅ إنشاء instance جاهز
 const API = axios.create({
   baseURL,
-  withCredentials: true, // لتتبع الجلسات وطلبات OTP
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
 });
 
-// ✅ إضافة الـ Token (JWT) تلقائيًا إن وجد في localStorage
-API.interceptors.request.use((req) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
-    if (token) req.headers.Authorization = `Bearer ${token}`;
-  }
-  return req;
-});
-
-// ✅ التحقق من الاتصال قبل تنفيذ أي طلب
+// ✅ Interceptor (اختياري) لتسجيل الأخطاء
 API.interceptors.response.use(
   (res) => res,
-  (error) => {
-    // لو السيرفر غير متاح أو فيه مشكلة اتصال
-    if (!error.response) {
-      console.error("⚠️ API connection failed:", error.message);
-      alert("Service temporarily unavailable. Please check your connection.");
-    }
-    return Promise.reject(error);
+  (err) => {
+    console.error("❌ API Error:", err.response?.data || err.message);
+    throw err;
   }
 );
 

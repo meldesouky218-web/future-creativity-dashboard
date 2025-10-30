@@ -25,7 +25,7 @@ export default function StaffProfile() {
   const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
-    if (!id) return;
+    if (!router.isReady || !id) return;
     const fetchUser = async () => {
       try {
         const res = await API.get(`/staff/${id}`);
@@ -59,7 +59,7 @@ export default function StaffProfile() {
       }
     };
     fetchUser();
-  }, [id]);
+  }, [router.isReady, id]);
 
   const handleSave = async () => {
     // keep page content; errors handled by toast
