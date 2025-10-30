@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import API from "../utils/api";
@@ -7,20 +8,31 @@ import StaffFormModal from "../components/StaffFormModal";
 export default function StaffManagement() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
 
-  const loadUsers = () =>
-    API.get("/staff")
-      .then((res) => setUsers(res.data))
-      .catch(() => setError("Failed to fetch staff list"));
+  // 🧩 تحميل قائمة الموظفين
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await API.get("/staff");
+      setUsers(res.data || []);
+      setError("");
+    } catch (err) {
+      console.error("❌ Staff fetch error:", err);
+      setError("Failed to fetch staff list. Please check your login or network.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // ✅ تحميل قائمة المستخدمين
+  // ✅ تحميل البيانات عند فتح الصفحة
   useEffect(() => {
     loadUsers();
   }, []);
 
   return (
-    <Layout title="User Management">
+    <Layout title="Staff Management">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold text-matteGold">Staff</h2>
@@ -31,44 +43,67 @@ export default function StaffManagement() {
             + Add User
           </button>
         </div>
+
         <p className="text-lightText/70 mb-6">
           Browse users, then open a profile to edit role or reset password.
         </p>
 
-        {/* ✅ قائمة المستخدمين */}
-        <div>
-          <h3 className="text-lg text-matteGold mb-3 font-semibold">
-            Existing users
-          </h3>
-          <ul className="space-y-2 text-sm text-lightText/80">
-            {users.map((user) => (
-              <li
-                key={user.id}
-                className="border-b border-[#1F2837] pb-2 flex justify-between items-center hover:bg-[#151A28] transition rounded-md px-3 py-1"
-              >
-                <div>
-                  <Link
-                    href={`/staff/${user.id}`}
-                    className="text-matteGold hover:underline"
+        {/* 🔄 حالة التحميل */}
+        {loading && (
+          <p className="text-lightText/60 italic mb-3">⏳ Loading staff list...</p>
+        )}
+
+        {/* ⚠️ حالة الخطأ */}
+        {error && (
+          <p className="text-red-400 mb-3 font-semibold bg-[#2a1b1b] p-2 rounded-lg">
+            {error}
+          </p>
+        )}
+
+        {/* ✅ عرض قائمة الموظفين */}
+        {!loading && !error && (
+          <div>
+            <h3 className="text-lg text-matteGold mb-3 font-semibold">
+              Existing users
+            </h3>
+            {users.length > 0 ? (
+              <ul className="space-y-2 text-sm text-lightText/80">
+                {users.map((user) => (
+                  <li
+                    key={user.id}
+                    className="border-b border-[#1F2837] pb-2 flex justify-between items-center hover:bg-[#151A28] transition rounded-md px-3 py-1"
                   >
-                    {user.name || "Unnamed"}{" "}
-                    <span className="text-lightText/50">#{user.id}</span>
-                  </Link>
-                  <span className="ml-2 text-lightText/70">{user.email}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <a
-                    href={`/staff/${user.id}`}
-                    className="text-xs rounded-full px-3 py-1 border border-matteGold text-matteGold hover:bg-matteGold hover:text-black"
-                  >
-                    View
-                  </a>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+                    <div>
+                      <Link
+                        href={`/staff/${user.id}`}
+                        className="text-matteGold hover:underline"
+                      >
+                        {user.name || "Unnamed"}{" "}
+                        <span className="text-lightText/50">#{user.id}</span>
+                      </Link>
+                      <span className="ml-2 text-lightText/70">
+                        {user.email}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/staff/${user.id}`}
+                        className="text-xs rounded-full px-3 py-1 border border-matteGold text-matteGold hover:bg-matteGold hover:text-black"
+                      >
+                        View
+                      </Link>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-lightText/60 italic">No staff found yet.</p>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* 🪄 نافذة الإضافة */}
       <StaffFormModal
         open={isAddOpen}
         onClose={() => setIsAddOpen(false)}
